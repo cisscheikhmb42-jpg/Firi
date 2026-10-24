@@ -1,9 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  // Inclut le prompt système (prompts/firi.md) dans le déploiement Vercel.
+  outputFileTracingIncludes: {
+    "/api/analyser": ["./prompts/**/*"],
+  },
   turbopack: {
     rules: {
       "*.css": {
