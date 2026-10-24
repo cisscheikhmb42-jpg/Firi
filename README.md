@@ -24,7 +24,7 @@ Ouvre http://localhost:3000.
 | `ANTHROPIC_API_KEY` | Clé Claude                                |
 | `CLAUDE_MODEL`      | Optionnel, par défaut `claude-sonnet-5-5` |
 | `GEMINI_API_KEY`    | Clé Gemini                                |
-| `GEMINI_MODEL`      | Optionnel, par défaut `gemini-2.5-flash`  |
+| `GEMINI_MODEL`      | Optionnel, par défaut `gemini-flash-latest` |
 
 Les clés ne sont lues que côté serveur (`app/api/analyser/route.ts`).
 `.env.local` est ignoré par git : ne mets jamais de vraie clé dans `.env.example`.

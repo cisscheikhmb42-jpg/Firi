@@ -13,7 +13,7 @@ type Etat =
   | { etape: "chargement"; apercu: string }
   // L'image reste en mémoire dans le téléphone pour la conversation, jamais sur le serveur.
   | { etape: "resultat"; analyse: AnalyseDocument; image: string }
-  | { etape: "erreur"; message: string };
+  | { etape: "erreur"; message: string; code?: string };
 
 export default function Accueil() {
   const [etat, setEtat] = useState<Etat>({ etape: "accueil" });
@@ -31,12 +31,13 @@ export default function Accueil() {
         body: JSON.stringify({ image }),
       });
       const donnees = await reponse.json();
-      if (!reponse.ok) throw new Error(donnees.erreur);
+      if (!reponse.ok) throw Object.assign(new Error(donnees.erreur), { code: donnees.code });
       setEtat({ etape: "resultat", analyse: donnees, image });
     } catch (e) {
       setEtat({
         etape: "erreur",
         message: e instanceof Error && e.message ? e.message : "Problème de connexion. Réessaie.",
+        code: (e as { code?: string }).code,
       });
     }
   }
@@ -161,6 +162,8 @@ export default function Accueil() {
         <div className="flex flex-1 flex-col justify-center gap-6">
           <Carte icone="😕" titre="Am na jafe-jafe" couleur="rouge">
             <p className="text-xl text-stone-800">{etat.message}</p>
+            {/* Petit code technique pour comprendre la panne (ex : cle_invalide). */}
+            {etat.code && <p className="mt-3 text-sm text-stone-500">Code : {etat.code}</p>}
           </Carte>
           <button
             type="button"

@@ -5,6 +5,7 @@ import { GoogleGenAI, type Content } from "@google/genai";
 import { chargerPromptConversation } from "./prompt";
 import { RAPPEL_ORDONNANCE, type AnalyseDocument } from "./schema";
 import type { ImageEntree } from "./analyse";
+import { MODELE_GEMINI } from "./providers/gemini";
 
 export type MessageConversation = {
   role: "utilisateur" | "firi";
@@ -27,8 +28,6 @@ export type DemandeConversation = {
   historique: MessageConversation[];
   audio: { base64: string; mimeType: string };
 };
-
-const MODELE = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 const SCHEMA_REPONSE = {
   type: "object",
@@ -81,7 +80,7 @@ export async function repondreQuestion(demande: DemandeConversation): Promise<Re
   };
 
   const reponse = await ai.models.generateContent({
-    model: MODELE,
+    model: MODELE_GEMINI,
     contents: fusionnerTours([contexte, accuse, ...historique, question]),
     config: {
       systemInstruction: systeme,

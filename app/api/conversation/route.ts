@@ -1,3 +1,4 @@
+import { codeErreurIA } from "@/lib/erreurs";
 import { repondreQuestion, type MessageConversation } from "@/lib/conversation";
 import { normaliserAnalyse } from "@/lib/schema";
 import type { MediaType } from "@/lib/analyse";
@@ -10,8 +11,8 @@ const TAILLE_MAX_BASE64 = 4_200_000;
 // On garde seulement les derniers échanges pour rester léger.
 const HISTORIQUE_MAX = 12;
 
-function erreur(message: string, status: number) {
-  return Response.json({ erreur: message }, { status });
+function erreur(message: string, status: number, code?: string) {
+  return Response.json({ erreur: message, code }, { status });
 }
 
 function lireDataUrl(valeur: unknown) {
@@ -62,7 +63,8 @@ export async function POST(request: Request) {
     // Rien n'est stocké : ni l'audio, ni l'image, ni la conversation.
     return Response.json(reponse, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
-    console.error("Échec de la conversation :", e instanceof Error ? e.message : e);
-    return erreur("Firi n'a pas pu répondre. Réessaie dans un instant.", 502);
+    const code = codeErreurIA(e);
+    console.error("Échec de la conversation [%s] :", code, e instanceof Error ? e.message : e);
+    return erreur("Firi n'a pas pu répondre. Réessaie dans un instant.", 502, code);
   }
 }

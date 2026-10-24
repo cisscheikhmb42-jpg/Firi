@@ -100,7 +100,9 @@ export default function Conversation({ image, analyse }: Props) {
         }),
       });
       const donnees = await reponse.json();
-      if (!reponse.ok) throw new Error(donnees.erreur);
+      if (!reponse.ok) {
+        throw new Error(donnees.code ? `${donnees.erreur} (code : ${donnees.code})` : donnees.erreur);
+      }
       const r = donnees as ReponseConversation;
       setMessages((precedents) => [
         ...precedents,

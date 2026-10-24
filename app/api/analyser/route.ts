@@ -1,3 +1,4 @@
+import { codeErreurIA } from "@/lib/erreurs";
 import { analyserDocument, fournisseurActif, type MediaType } from "@/lib/analyse";
 
 // Laisse le temps à l'IA de lire le document (Vercel).
@@ -7,8 +8,8 @@ const TYPES_ACCEPTES: MediaType[] = ["image/jpeg", "image/png", "image/webp"];
 // Vercel limite le corps d'une requête à ~4,5 Mo ; l'app compresse avant l'envoi.
 const TAILLE_MAX_BASE64 = 4_000_000;
 
-function erreur(message: string, status: number) {
-  return Response.json({ erreur: message }, { status });
+function erreur(message: string, status: number, code?: string) {
+  return Response.json({ erreur: message, code }, { status });
 }
 
 export async function POST(request: Request) {
@@ -41,7 +42,8 @@ export async function POST(request: Request) {
     return Response.json(analyse, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     // On journalise seulement le message d'erreur, jamais l'image ni le contenu.
-    console.error("Échec de l'analyse :", e instanceof Error ? e.message : e);
-    return erreur("Firi n'a pas réussi à lire le document. Réessaie dans un instant.", 502);
+    const code = codeErreurIA(e);
+    console.error("Échec de l'analyse [%s] :", code, e instanceof Error ? e.message : e);
+    return erreur("Firi n'a pas réussi à lire le document. Réessaie dans un instant.", 502, code);
   }
 }
