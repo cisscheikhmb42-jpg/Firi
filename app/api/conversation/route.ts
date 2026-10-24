@@ -22,9 +22,9 @@ function lireDataUrl(valeur: unknown) {
 }
 
 export async function POST(request: Request) {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!process.env.GEMINI_API_KEY?.trim()) {
     console.error("GEMINI_API_KEY manquante : la conversation vocale utilise Gemini.");
-    return erreur("Le service n'est pas encore configuré.", 500);
+    return erreur("Le service n'est pas encore configuré.", 500, "manque_GEMINI_API_KEY");
   }
 
   let corps: { image?: unknown; audio?: unknown; analyse?: unknown; historique?: unknown };

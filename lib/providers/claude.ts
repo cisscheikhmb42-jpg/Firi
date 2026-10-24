@@ -7,7 +7,7 @@ const MODELE = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 
 export async function analyserAvecClaude(image: ImageEntree, systeme: string): Promise<unknown> {
   // La clé est lue côté serveur uniquement (ANTHROPIC_API_KEY).
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY?.trim() });
 
   const reponse = await client.beta.messages.create({
     model: MODELE,

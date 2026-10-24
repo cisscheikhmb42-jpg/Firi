@@ -48,7 +48,7 @@ export const MESSAGE_PAS_COMPRIS = {
 };
 
 export async function repondreQuestion(demande: DemandeConversation): Promise<ReponseConversation> {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY?.trim() });
   const systeme = await chargerPromptConversation();
 
   // 1er message : le document (photo + analyse déjà faite).

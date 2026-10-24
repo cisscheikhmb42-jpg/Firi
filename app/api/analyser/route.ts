@@ -1,5 +1,5 @@
 import { codeErreurIA } from "@/lib/erreurs";
-import { analyserDocument, fournisseurActif, type MediaType } from "@/lib/analyse";
+import { analyserDocument, fournisseurActif, variableCle, type MediaType } from "@/lib/analyse";
 
 // Laisse le temps à l'IA de lire le document (Vercel).
 // Temps maximum laissé à l'IA (Vercel, Fluid compute : jusqu'à 300 s).
@@ -15,10 +15,10 @@ function erreur(message: string, status: number, code?: string) {
 
 export async function POST(request: Request) {
   const fournisseur = fournisseurActif();
-  const cle = fournisseur === "gemini" ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY;
-  if (!cle) {
-    console.error(`Clé API manquante pour le fournisseur "${fournisseur}".`);
-    return erreur("Le service n'est pas encore configuré.", 500);
+  const variable = variableCle(fournisseur);
+  if (!process.env[variable]?.trim()) {
+    console.error(`Clé API manquante : ${variable} (fournisseur "${fournisseur}").`);
+    return erreur("Le service n'est pas encore configuré.", 500, `manque_${variable}`);
   }
 
   let image: unknown;

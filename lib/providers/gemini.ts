@@ -18,7 +18,7 @@ export function optionsGemini() {
 
 export async function analyserAvecGemini(image: ImageEntree, systeme: string): Promise<unknown> {
   // La clé est lue côté serveur uniquement (GEMINI_API_KEY).
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY?.trim() });
 
   const reponse = await ai.models.generateContent({
     model: MODELE_GEMINI,
