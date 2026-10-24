@@ -20,6 +20,7 @@ Ouvre http://localhost:3000.
 | Variable            | Rôle                                      |
 | ------------------- | ----------------------------------------- |
 | `AI_PROVIDER`       | `claude` (par défaut) ou `gemini`         |
+|                     | (la conversation vocale utilise toujours Gemini) |
 | `ANTHROPIC_API_KEY` | Clé Claude                                |
 | `CLAUDE_MODEL`      | Optionnel, par défaut `claude-sonnet-5-5` |
 | `GEMINI_API_KEY`    | Clé Gemini                                |
@@ -28,17 +29,34 @@ Ouvre http://localhost:3000.
 Les clés ne sont lues que côté serveur (`app/api/analyser/route.ts`).
 `.env.local` est ignoré par git : ne mets jamais de vraie clé dans `.env.example`.
 
+## Conversation vocale
+
+Après l'analyse, le bouton **🎤 Pose ta question** permet de parler à Firi
+(appuyer, parler en wolof ou en français, relâcher). La voix est enregistrée
+dans le téléphone, convertie en WAV, et envoyée à **Gemini** avec la photo,
+l'analyse et l'historique de la discussion. Rien n'est stocké.
+
+- Règles de la conversation : `prompts/conversation.md`
+- Emplacement pour une future voix wolof : `lib/voix.ts` (`obtenirAudioWolof`)
+
+Le micro ne fonctionne que sur une adresse **https** (Vercel) ou `localhost`.
+
 ## Modifier ce que dit Firi
 
 Tout le comportement de l'IA est dans **`prompts/firi.md`** (style du wolof,
-règles, section `EXEMPLES` à compléter). Les commentaires `<!-- -->` de ce
+règles, section `EXEMPLES` à compléter) et `prompts/conversation.md`. Les commentaires `<!-- -->` de ce
 fichier ne sont pas envoyés à l'IA.
 
 ## Structure
 
 ```
 app/page.tsx              Écran unique (accueil → chargement → résultat)
-app/api/analyser/route.ts Route serveur : reçoit la photo, appelle l'IA
+app/api/analyser/route.ts     Route serveur : reçoit la photo, appelle l'IA
+app/api/conversation/route.ts Route serveur : question vocale → Gemini
+lib/conversation.ts       Appel Gemini pour la conversation + règles
+lib/audio.ts              Enregistrement du micro + conversion WAV
+lib/voix.ts               Lecture à voix haute (emplacement voix wolof)
+components/Conversation.tsx Bulles de discussion + bouton micro
 lib/analyse.ts            Choix Claude / Gemini (AI_PROVIDER)
 lib/providers/claude.ts   Appel Claude
 lib/providers/gemini.ts   Appel Gemini

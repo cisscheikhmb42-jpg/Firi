@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { lireAudio, lireEnFrancais, obtenirAudioWolof } from "@/lib/voix";
 
 const pasDeSouscription = () => () => {};
 
 type Props = {
   texteFrancais: string;
-  // Emplacement prévu pour un futur audio wolof (fichier ou synthèse vocale).
-  audioWolofUrl?: string;
+  // Utilisé dès qu'une voix wolof sera branchée dans lib/voix.ts.
+  texteWolof?: string;
+  compact?: boolean;
 };
 
-export default function BoutonEcouter({ texteFrancais, audioWolofUrl }: Props) {
+export default function BoutonEcouter({ texteFrancais, texteWolof, compact = false }: Props) {
   const [enLecture, setEnLecture] = useState(false);
+  const stop = useRef<(() => void) | null>(null);
   // La lecture vocale n'existe que dans le navigateur (false côté serveur).
   const disponible = useSyncExternalStore(
     pasDeSouscription,
@@ -19,30 +22,18 @@ export default function BoutonEcouter({ texteFrancais, audioWolofUrl }: Props) {
     () => false,
   );
 
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  useEffect(() => () => stop.current?.(), []);
 
-  function lireFrancais() {
-    const synth = window.speechSynthesis;
+  async function basculer() {
     if (enLecture) {
-      synth.cancel();
+      stop.current?.();
       setEnLecture(false);
       return;
     }
-    synth.cancel();
-    const phrase = new SpeechSynthesisUtterance(texteFrancais);
-    phrase.lang = "fr-FR";
-    phrase.rate = 0.9;
-    const voix = synth.getVoices().find((v) => v.lang.toLowerCase().startsWith("fr"));
-    if (voix) phrase.voice = voix;
-    phrase.onend = () => setEnLecture(false);
-    phrase.onerror = () => setEnLecture(false);
     setEnLecture(true);
-    synth.speak(phrase);
-  }
-
-  if (audioWolofUrl) {
-    // TODO : quand l'audio wolof sera prêt, le lire ici en priorité.
-    return <audio controls src={audioWolofUrl} className="w-full" />;
+    const fini = () => setEnLecture(false);
+    const audioWolof = texteWolof ? await obtenirAudioWolof(texteWolof) : null;
+    stop.current = audioWolof ? lireAudio(audioWolof, fini) : lireEnFrancais(texteFrancais, fini);
   }
 
   if (!disponible || !texteFrancais) return null;
@@ -50,11 +41,15 @@ export default function BoutonEcouter({ texteFrancais, audioWolofUrl }: Props) {
   return (
     <button
       type="button"
-      onClick={lireFrancais}
+      onClick={basculer}
       aria-pressed={enLecture}
-      className="mt-4 flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-amber-100 px-4 text-xl font-bold text-amber-900 active:bg-amber-200"
+      className={
+        compact
+          ? "mt-3 flex min-h-12 items-center gap-2 rounded-xl bg-amber-100 px-4 text-lg font-bold text-amber-900 active:bg-amber-200"
+          : "mt-4 flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-amber-100 px-4 text-xl font-bold text-amber-900 active:bg-amber-200"
+      }
     >
-      <span aria-hidden="true" className="text-2xl">{enLecture ? "⏹️" : "🔊"}</span>
+      <span aria-hidden="true" className={compact ? "text-xl" : "text-2xl"}>{enLecture ? "⏹️" : "🔊"}</span>
       {enLecture ? "Arrêter" : "Écouter"}
     </button>
   );

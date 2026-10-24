@@ -6,11 +6,13 @@ import { compresserImage } from "@/lib/image";
 import Resultat from "@/components/Resultat";
 import Carte from "@/components/Carte";
 import BoutonEcouter from "@/components/BoutonEcouter";
+import Conversation from "@/components/Conversation";
 
 type Etat =
   | { etape: "accueil" }
   | { etape: "chargement"; apercu: string }
-  | { etape: "resultat"; analyse: AnalyseDocument }
+  // L'image reste en mémoire dans le téléphone pour la conversation, jamais sur le serveur.
+  | { etape: "resultat"; analyse: AnalyseDocument; image: string }
   | { etape: "erreur"; message: string };
 
 export default function Accueil() {
@@ -30,7 +32,7 @@ export default function Accueil() {
       });
       const donnees = await reponse.json();
       if (!reponse.ok) throw new Error(donnees.erreur);
-      setEtat({ etape: "resultat", analyse: donnees });
+      setEtat({ etape: "resultat", analyse: donnees, image });
     } catch (e) {
       setEtat({
         etape: "erreur",
@@ -125,15 +127,20 @@ export default function Accueil() {
             <p className="mt-3 text-lg leading-relaxed text-stone-600">
               {etat.analyse.message_reprendre_photo.francais}
             </p>
-            <BoutonEcouter texteFrancais={etat.analyse.message_reprendre_photo.francais} />
+            <BoutonEcouter
+              texteFrancais={etat.analyse.message_reprendre_photo.francais}
+              texteWolof={etat.analyse.message_reprendre_photo.wolof}
+            />
           </Carte>
           {boutonPhoto}
         </div>
       )}
 
       {etat.etape === "resultat" && etat.analyse.lisible && (
-        <div className="flex flex-col gap-6">
+        // pb-32 : place pour le bouton micro fixé en bas de l'écran.
+        <div className="flex flex-col gap-6 pb-32">
           <Resultat analyse={etat.analyse} />
+          <Conversation image={etat.image} analyse={etat.analyse} />
           <p className="text-center text-sm text-stone-500">
             Firi mën na juum. Su dee lu am solo la, laajal ku la gëna xam.
             <br />

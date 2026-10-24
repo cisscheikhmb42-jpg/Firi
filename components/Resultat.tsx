@@ -28,7 +28,7 @@ export default function Resultat({ analyse }: { analyse: AnalyseDocument }) {
       <Carte icone={analyse.est_ordonnance ? "💊" : "📄"} titre={analyse.type_document || "Document"}>
         <p className="text-xl font-bold leading-relaxed text-stone-900">{analyse.resume_wolof}</p>
         <p className="mt-3 text-lg leading-relaxed text-stone-600">{analyse.resume_francais}</p>
-        <BoutonEcouter texteFrancais={analyse.resume_francais} />
+        <BoutonEcouter texteFrancais={analyse.resume_francais} texteWolof={analyse.resume_wolof} />
       </Carte>
 
       {analyse.actions.length > 0 && (
@@ -43,7 +43,7 @@ export default function Resultat({ analyse }: { analyse: AnalyseDocument }) {
               </li>
             ))}
           </ol>
-          <BoutonEcouter texteFrancais={texteActions} />
+          <BoutonEcouter texteFrancais={texteActions} texteWolof={analyse.actions.map((a) => a.wolof).join(". ")} />
         </Carte>
       )}
 
@@ -57,7 +57,10 @@ export default function Resultat({ analyse }: { analyse: AnalyseDocument }) {
               </li>
             ))}
           </ul>
-          <BoutonEcouter texteFrancais={texteVigilance} />
+          <BoutonEcouter
+            texteFrancais={texteVigilance}
+            texteWolof={analyse.points_vigilance.map((p) => p.wolof).join(". ")}
+          />
         </Carte>
       )}
     </div>
