@@ -2,7 +2,8 @@ import { codeErreurIA } from "@/lib/erreurs";
 import { analyserDocument, fournisseurActif, type MediaType } from "@/lib/analyse";
 
 // Laisse le temps à l'IA de lire le document (Vercel).
-export const maxDuration = 60;
+// Temps maximum laissé à l'IA (Vercel, Fluid compute : jusqu'à 300 s).
+export const maxDuration = 120;
 
 const TYPES_ACCEPTES: MediaType[] = ["image/jpeg", "image/png", "image/webp"];
 // Vercel limite le corps d'une requête à ~4,5 Mo ; l'app compresse avant l'envoi.

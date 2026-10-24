@@ -9,6 +9,7 @@ export type CodeErreurIA =
   | "quota_depasse"
   | "ia_surchargee"
   | "reponse_invalide"
+  | "delai_depasse"
   | "inconnue";
 
 export function codeErreurIA(e: unknown): CodeErreurIA {
@@ -27,5 +28,6 @@ export function codeErreurIA(e: unknown): CodeErreurIA {
   }
   if (status >= 500 || /overloaded|UNAVAILABLE/i.test(message)) return "ia_surchargee";
   if (e instanceof SyntaxError) return "reponse_invalide";
+  if ((e as { name?: string })?.name === "TimeoutError" || /abort|timed? ?out/i.test(message)) return "delai_depasse";
   return "inconnue";
 }

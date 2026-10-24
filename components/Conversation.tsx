@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { AnalyseDocument } from "@/lib/schema";
 import type { MessageConversation, ReponseConversation } from "@/lib/conversation";
 import { convertirEnWav, demarrerEnregistrement, microDisponible, type Enregistrement } from "@/lib/audio";
+import { ErreurFiri, posterJson } from "@/lib/requete";
 import BoutonEcouter from "./BoutonEcouter";
 
 type Message = MessageConversation & {
@@ -87,23 +88,14 @@ export default function Conversation({ image, analyse }: Props) {
     setStatut("envoi");
     try {
       const audio = await convertirEnWav(await enr.arreter());
-      const reponse = await fetch("/api/conversation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          image,
-          analyse,
-          audio,
-          historique: messages
-            .filter((m) => m.compris)
-            .map(({ role, wolof, francais }) => ({ role, wolof, francais })),
-        }),
+      const r = await posterJson<ReponseConversation>("/api/conversation", {
+        image,
+        analyse,
+        audio,
+        historique: messages
+          .filter((m) => m.compris)
+          .map(({ role, wolof, francais }) => ({ role, wolof, francais })),
       });
-      const donnees = await reponse.json();
-      if (!reponse.ok) {
-        throw new Error(donnees.code ? `${donnees.erreur} (code : ${donnees.code})` : donnees.erreur);
-      }
-      const r = donnees as ReponseConversation;
       setMessages((precedents) => [
         ...precedents,
         {
@@ -122,7 +114,8 @@ export default function Conversation({ image, analyse }: Props) {
         },
       ]);
     } catch (e) {
-      setInfo(e instanceof Error && e.message ? e.message : "Problème de connexion. Réessaie.");
+      const code = e instanceof ErreurFiri && e.code ? ` (code : ${e.code})` : "";
+      setInfo((e instanceof Error && e.message ? e.message : "Problème de connexion. Réessaie.") + code);
     } finally {
       setStatut("pret");
     }

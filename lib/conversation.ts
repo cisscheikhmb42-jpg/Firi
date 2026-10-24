@@ -5,7 +5,7 @@ import { GoogleGenAI, type Content } from "@google/genai";
 import { chargerPromptConversation } from "./prompt";
 import { RAPPEL_ORDONNANCE, type AnalyseDocument } from "./schema";
 import type { ImageEntree } from "./analyse";
-import { MODELE_GEMINI } from "./providers/gemini";
+import { MODELE_GEMINI, optionsGemini } from "./providers/gemini";
 
 export type MessageConversation = {
   role: "utilisateur" | "firi";
@@ -83,6 +83,7 @@ export async function repondreQuestion(demande: DemandeConversation): Promise<Re
     model: MODELE_GEMINI,
     contents: fusionnerTours([contexte, accuse, ...historique, question]),
     config: {
+      ...optionsGemini(),
       systemInstruction: systeme,
       responseMimeType: "application/json",
       responseJsonSchema: SCHEMA_REPONSE,

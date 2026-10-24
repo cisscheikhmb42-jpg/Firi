@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { AnalyseDocument } from "@/lib/schema";
 import { compresserImage } from "@/lib/image";
+import { posterJson } from "@/lib/requete";
 import Resultat from "@/components/Resultat";
 import Carte from "@/components/Carte";
 import BoutonEcouter from "@/components/BoutonEcouter";
@@ -25,14 +26,8 @@ export default function Accueil() {
     try {
       const image = await compresserImage(fichier);
       setEtat({ etape: "chargement", apercu: image });
-      const reponse = await fetch("/api/analyser", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image }),
-      });
-      const donnees = await reponse.json();
-      if (!reponse.ok) throw Object.assign(new Error(donnees.erreur), { code: donnees.code });
-      setEtat({ etape: "resultat", analyse: donnees, image });
+      const analyse = await posterJson<AnalyseDocument>("/api/analyser", { image });
+      setEtat({ etape: "resultat", analyse, image });
     } catch (e) {
       setEtat({
         etape: "erreur",
